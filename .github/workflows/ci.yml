@@ -1,0 +1,43 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+
+      - run: pip install -r app/requirements.txt
+
+      - run: ruff check app/
+
+      - run: pytest app/tests/ -v
+
+      - run: docker build -t apex-ops-api:${{ github.sha }} .
+
+      - name: Container smoke test
+        run: |
+          set -e
+          docker run -d --name smoke -p 8000:8000 \
+            -e DATABASE_URL=postgresql://x:x@localhost:5432/x \
+            apex-ops-api:${{ github.sha }}
+          # wait up to 30s for /health to return 200
+          for i in $(seq 1 15); do
+            if curl -fsS http://localhost:8000/health; then
+              echo "SMOKE OK"; break
+            fi
+            sleep 2
+            if [ "$i" -eq 15 ]; then
+              echo "SMOKE FAILED"; docker logs smoke; docker rm -f smoke; exit 1
+            fi
+          done
+          docker rm -f smoke
+
+  deploy:
+    needs: test-build          
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deploy runs ONLY if test-build (all 6 checks) passes"
