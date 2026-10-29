@@ -1,29 +1,45 @@
 # Apex Ops API — Junior DevOps Assessment
 
-## Setup
-1. cp .env.example .env
-2. docker compose up -d --build
-3. curl http://localhost:8000/health
+## Setup and Run Steps
+```bash
+# 1. Copy environment variables
+cp .env.example .env
 
-## Run tests
-pip install -r app/requirements.txt && pytest app/tests/ -v
+# 2. Build and run the application and database
+docker compose up -d --build
 
-## Architecture
-[app:FastAPI] --> [db:Postgres]   (compose, named volume pgdata)
-CI builds versioned image --> compose deploy --> rollback by tag
+# 3. Verify the application is running
+curl http://localhost:8000/health
+curl http://localhost:8000/ready
+Running Tests
+To run the automated checks (including the one intentional failure), use a Python virtual environment:
 
-## Security
-- Secrets: .env gitignored; .env.example committed; CI uses GitHub Secrets
-- Least privilege: non-root `appuser`; DB user scoped
-- Scanning: trivy image apex-ops-api:latest
+bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r app/requirements.txt
+pytest app/tests/ -v
+Architecture and Process Diagram
+text
+[ GitHub Actions CI ] --> [ Docker Image ] --> [ Docker Compose ]
+                                                    |
+                                          +---------+---------+
+                                          |                   |
+                                    [ FastAPI App ] <---> [ PostgreSQL ]
+                                      (non-root)          (named volume)
+Security and Configuration Hygiene
+Secrets handling: .env is gitignored; .env.example is committed. No hard-coded secrets.
 
-## Metrics/Alert proposal
-Prometheus scrapes /metrics; alerts: error_rate>5% (5m), readiness_fail>1m.
+Least privilege: Container runs as non-root user (appuser); DB user is scoped.
 
-## Cost-aware cloud path
-Single small VM + managed Postgres free tier (Fly.io/Railway); scale later.
+Dependency/Image scanning: Dockerfile scanned via Hadolint (see evidence/trivy.png).
 
-## Assumptions & trade-offs
-- Local-only, synthetic data, no paid cloud
-- Single-node compose; not production HA
-- Rollback = previous image tag re-deploy
+Metrics and Alert Proposal
+Structured logs: Implemented (JSON format).
+
+Health checks: Implemented (/health for liveness, /ready for DB readiness).
+
+Metrics/Alert Proposal: Prometheus scrapes /metrics. Proposed alerts: error_rate > 5% for 5 minutes, and readiness_fail for > 1 minute.
+
+Cost-Aware Cloud Path
+Single small VM (e.g., Fly.io/Railway free tier) with a managed Postgres free tier. Scale horizontally only when needed.
