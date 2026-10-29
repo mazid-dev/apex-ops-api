@@ -1,80 +1,96 @@
-Markdown
 # Apex Ops API — Junior DevOps Assessment
 
-A production-ready FastAPI application backed by a PostgreSQL database, featuring Docker containerization, CI/CD pipeline integration, structured logging, health checks, and security-focused configurations.
+A production-ready FastAPI application backed by PostgreSQL, featuring Docker containerization, CI/CD integration, structured logging, health checks, and security-focused configurations.
 
----
-
-## 🛠️ Setup and Run Steps
-
-Follow these exact steps to set up and run the environment locally:
+## 🛠️ Setup and Run
 
 ### 1. Configure Environment Variables
-Copy the template file to create your local `.env` configuration:
+
+Create your local environment configuration:
+
 ```bash
 cp .env.example .env
-2. Build and Run Application
-Spin up the application and PostgreSQL database containers in detached mode:
+```
 
-Bash
+### 2. Build and Start Services
+
+Build the application image and start the application and PostgreSQL containers:
+
+```bash
 docker compose up -d --build
-3. Verify Health and Readiness
-Check that the application service is live and connected to the database:
+```
 
-Bash
-# Liveness Check
+### 3. Verify Health and Readiness
+
+Check application liveness:
+
+```bash
 curl http://localhost:8000/health
+```
 
-# Database Readiness Check
+Check database connectivity:
+
+```bash
 curl http://localhost:8000/ready
-🧪 Running Tests
-To run automated checks (including intentional failure validation), use a Python virtual environment:
+```
 
-Bash
-# Create and activate virtual environment
+## 🧪 Running Tests
+
+Create and activate a Python virtual environment:
+
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
+```
 
-# Install dependencies
+Install dependencies:
+
+```bash
 pip install -r app/requirements.txt
+```
 
-# Run pytest with verbose output
+Run the test suite:
+
+```bash
 pytest app/tests/ -v
-🏗️ Architecture and Process Diagram
-Plaintext
-[ GitHub Actions CI ] --> [ Docker Image ] --> [ Docker Compose ]
-                                                    |
-                                          +---------+---------+
-                                          |                   |
-                                    [ FastAPI App ] <---> [ PostgreSQL ]
-                                      (non-root)          (named volume)
+```
 
+## 🏗️ Architecture
 
-🔒 Security & Configuration Hygiene
-Secrets Management: Sensitive keys and variables are strictly managed via .env (gitignored). Standard template provided in committed .env.example. Zero hard-coded credentials in source files.
+```text
+              GitHub Actions CI
+                      |
+                      v
+                Docker Image
+                      |
+                      v
+                Docker Compose
+                      |
+             +--------+--------+
+             |                 |
+             v                 v
+       FastAPI App <------> PostgreSQL
+       (Non-root User)      (Named Volume)
+```
 
-Least Privilege: The application container runs under a non-root user (appuser). PostgreSQL user access is strictly scoped to application needs.
+## 🔒 Security and Configuration
 
-Vulnerability & Linting Scanning: Dockerfile linted using Hadolint and scanned for security vulnerabilities (refer to evidence/trivy.png).
+- **Secrets Management:** Sensitive configuration is stored in a local `.env` file excluded from version control. An `.env.example` template provides the required configuration structure.
+- **Least Privilege:** The application container runs as a non-root `appuser`, reducing unnecessary privileges.
+- **Database Security:** PostgreSQL access is configured for application-specific requirements.
+- **Security Scanning:** Dockerfile linting is performed with Hadolint, and vulnerability scanning evidence is provided in `evidence/trivy.png`.
 
+## 📊 Observability and Monitoring
 
-📊 Observability & Metrics Proposal
-Structured Logging: Centralized JSON formatted output for automated log parsing and indexing.
+- **Structured Logging:** JSON-formatted logs support centralized collection, parsing, and analysis.
+- **Liveness Probe:** `/health` verifies application health.
+- **Readiness Probe:** `/ready` verifies database connectivity.
+- **Prometheus Alerting Proposals:**
+  - **High Error Rate:** Trigger an alert when the error rate exceeds 5% over a five-minute window.
+  - **Readiness Failure:** Trigger an alert when readiness checks fail continuously for more than one minute.
 
-Health Monitoring:
+## ☁️ Cost-Aware Cloud Deployment
 
-/health — Liveness probe (checks container status)
+The deployment strategy prioritizes minimal resource consumption through platforms such as Fly.io or Railway, combined with managed PostgreSQL where appropriate.
 
-/ready — Readiness probe (checks database connectivity)
-
-Prometheus Alerting Proposal:
-
-High Error Rate Alert: Triggered if error_rate > 5% over a 5-minute window.
-
-Readiness Failure Alert: Triggered if readiness_fail remains active for > 1 minute.
-
-
-☁️ Cost-Aware Cloud Path
-Deployment strategy targets minimal resource footprints (e.g., Fly.io or Railway free/standard tier) linked to a managed PostgreSQL instance.
-
-Employs horizontal scaling only upon hitting predefined threshold limits to optimize cloud cost efficiency.
+Horizontal scaling can be introduced when predefined resource utilization or performance thresholds are reached, helping balance application reliability and cloud costs.
