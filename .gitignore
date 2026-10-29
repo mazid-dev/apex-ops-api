@@ -1,5 +1,4 @@
 .env
 __pycache__/
 .git
-evidence/
 *.md.venv/
