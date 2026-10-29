@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-import logging, os, json, time
+import logging
+import os
+import json
+import time
 import psycopg2
 
 app = FastAPI()
