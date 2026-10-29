@@ -1,0 +1,31 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-8.3.3, pluggy-1.7.0 -- /home/cube/apex-ops-api/.venv/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/cube/apex-ops-api
+plugins: anyio-4.15.1
+collecting ... collected 3 items
+
+app/tests/test_app.py::test_health PASSED                                [ 33%]
+app/tests/test_app.py::test_ready_structure PASSED                       [ 66%]
+app/tests/test_intentional_fail.py::test_intentional_fail FAILED         [100%]
+
+=================================== FAILURES ===================================
+____________________________ test_intentional_fail _____________________________
+
+    def test_intentional_fail():
+        # DELIBERATELY failing to demonstrate CI blocks deployment.
+        # Evidence captured, then change 2 -> 1 and re-push.
+>       assert 1 == 2, "Intentional failure for CI evidence"
+E       AssertionError: Intentional failure for CI evidence
+E       assert 1 == 2
+
+app/tests/test_intentional_fail.py:4: AssertionError
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/starlette/testclient.py:40
+  /home/cube/apex-ops-api/.venv/lib/python3.12/site-packages/starlette/testclient.py:40: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = typing.Callable[[], typing.ContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED app/tests/test_intentional_fail.py::test_intentional_fail - AssertionE...
+==================== 1 failed, 2 passed, 1 warning in 2.35s ====================

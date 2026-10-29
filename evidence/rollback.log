@@ -1,0 +1,4 @@
+NAME                 IMAGE                 COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+apex-ops-api-api-1   apex-ops-api:v0.9.0   "uvicorn main:app --…"   api       11 seconds ago   Up 8 seconds (healthy)    0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+apex-ops-api-db-1    postgres:16-alpine    "docker-entrypoint.s…"   db        47 minutes ago   Up 32 seconds (healthy)   5432/tcp
+{"status":"ok"}
